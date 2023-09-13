@@ -220,7 +220,13 @@ impl Function {
 					ctx.add_value(name.to_raw(), val.coerce_to(kind)?);
 				}
 				// Run the custom function
-				val.block.compute(&ctx, opt, txn, doc).await
+				if val.permissions != Permission::Full {
+					// Disable permissions
+					let opt = &opt.new_with_perms(false);
+					val.block.compute(&ctx, opt, txn, doc).await
+				} else {
+					val.block.compute(&ctx, opt, txn, doc).await
+				}
 			}
 			#[allow(unused_variables)]
 			Self::Script(s, x) => {
